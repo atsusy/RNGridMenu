@@ -532,7 +532,7 @@ static RNGridMenu *rn_visibleGridMenu;
 
 - (void)layoutAsGrid {
     NSInteger itemCount = self.items.count;
-    NSInteger rowCount = ceilf(sqrtf(itemCount));
+    NSInteger rowCount = floorf(sqrtf(itemCount));
 
     CGFloat height = self.itemSize.height * rowCount;
     CGFloat width = self.itemSize.width * ceilf(itemCount / (CGFloat)rowCount);
