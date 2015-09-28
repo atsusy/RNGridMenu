@@ -124,6 +124,9 @@ typedef NS_ENUM(NSInteger, RNGridMenuStyle) {
 // If tapped outside the view, the menu is simply dismissed.
 - (void)dismissAnimated:(BOOL)animated;
 
+- (void)setEnabled:(BOOL)enabled atIndex:(NSUInteger)index;
+@property (nonatomic, strong) UIColor *itemDisabledColor;
+
 @end
 
 

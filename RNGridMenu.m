@@ -192,6 +192,7 @@ CGPoint RNCentroidOfTouchesInView(NSSet *touches, UIView *view) {
 @property (nonatomic, strong) UIImageView *imageView;
 @property (nonatomic, strong) UILabel *titleLabel;
 @property (nonatomic, assign) NSInteger itemIndex;
+@property (nonatomic) BOOL enabled;
 
 @end
 
@@ -211,6 +212,8 @@ CGPoint RNCentroidOfTouchesInView(NSSet *touches, UIView *view) {
         _titleLabel = [[UILabel alloc] init];
         _titleLabel.backgroundColor = [UIColor clearColor];
         [self addSubview:_titleLabel];
+        
+        self.enabled = YES;
     }
     return self;
 }
@@ -273,7 +276,7 @@ CGPoint RNCentroidOfTouchesInView(NSSet *touches, UIView *view) {
 
 - (instancetype)initWithImage:(UIImage *)image title:(NSString *)title action:(dispatch_block_t)action {
     if ((self = [super init])) {
-        _image = image;
+        _image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
         _title = [title copy];
         _action = [action copy];
     }
@@ -405,6 +408,9 @@ static RNGridMenu *rn_visibleGridMenu;
     id<RNGridMenuDelegate> delegate = self.delegate;
 
     if (self.selectedItemView != nil) {
+        if(!self.selectedItemView.enabled){
+            return;
+        }
         RNGridMenuItem *item = self.items[self.selectedItemView.itemIndex];
 
         if ([delegate respondsToSelector:@selector(gridMenu:willDismissWithSelectedItem:atIndex:)]) {
@@ -513,9 +519,10 @@ static RNGridMenu *rn_visibleGridMenu;
 
 - (void)styleItemViews {
     [self.itemViews enumerateObjectsUsingBlock:^(RNMenuItemView *itemView, NSUInteger idx, BOOL *stop) {
-        itemView.titleLabel.textColor = self.itemTextColor;
+        itemView.titleLabel.textColor = (itemView.enabled) ? self.itemTextColor : self.itemDisabledColor;
         itemView.titleLabel.textAlignment = self.itemTextAlignment;
         itemView.titleLabel.font = self.itemFont;
+        itemView.imageView.tintColor = (itemView.enabled) ? self.itemTextColor : self.itemDisabledColor;
     }];
 }
 
@@ -703,6 +710,21 @@ static RNGridMenu *rn_visibleGridMenu;
     [self rn_removeFromParentViewControllerCallingAppearanceMethods:YES];
 }
 
+#pragma mark - Control
+
+- (void)setEnabled:(BOOL)enabled atIndex:(NSUInteger)index
+{
+    RNMenuItemView *itemView = [self.itemViews objectAtIndex:index];
+    if(itemView){
+        itemView.enabled = enabled;
+    }
+    
+    if(rn_visibleGridMenu != nil){
+        [rn_visibleGridMenu.view setNeedsLayout];
+        [rn_visibleGridMenu.view layoutIfNeeded];
+    }
+}
+
 #pragma mark - Private
 
 - (void)rn_addToParentViewController:(UIViewController *)parentViewController callingAppearanceMethods:(BOOL)callAppearanceMethods {
@@ -758,7 +780,9 @@ static RNGridMenu *rn_visibleGridMenu;
     }
 
     if (![item isEmpty]) {
-        selectedItemView.backgroundColor = self.highlightColor;
+        if(selectedItemView.enabled){
+            selectedItemView.backgroundColor = self.highlightColor;
+        }
         self.selectedItemView = selectedItemView;
     } else {
         self.selectedItemView = nil;
