@@ -39,7 +39,7 @@
 #pragma mark - RNGridMenuDelegate
 
 - (void)gridMenu:(RNGridMenu *)gridMenu willDismissWithSelectedItem:(RNGridMenuItem *)item atIndex:(NSInteger)itemIndex {
-    NSLog(@"Dismissed with item %d: %@", itemIndex, item.title);
+    NSLog(@"Dismissed with item %ldd: %@",(long) itemIndex, item.title);
 }
 
 #pragma mark - Private
